@@ -7,7 +7,7 @@ use Inertia\Inertia;
 
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\orderItem;
+use App\Models\OrderItem;
 use App\Models\Ticket;
 use App\Models\StripePayment;
 

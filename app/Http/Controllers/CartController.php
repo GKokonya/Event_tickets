@@ -62,7 +62,7 @@ class CartController extends Controller
         if( !empty($cart) && isset($cart[$event_ticket_type_id]) && in_array($ticket->event_id ,array_column($cart,'event_id'))) {
             #product exist then increment quantity
             $cart[$event_ticket_type_id]['quantity']=$quantity;
-            $cart[$event_ticket_type_id]['sub_total']=$cart[$event_ticket_type_id]['unit_price'] * $cart[$event_ticket_type_id]['quantity'];
+            $cart[$event_ticket_type_id]['total_price']=$cart[$event_ticket_type_id]['unit_price'] * $cart[$event_ticket_type_id]['quantity'];
             session()->put('cart', $cart);
             return redirect()->back()->with('cart_success', 'Ticket updated!');
         }
@@ -94,7 +94,7 @@ class CartController extends Controller
                 $this->destroy($request->event_ticket_type_id);
             }else{
                 $cart = session()->get('cart');
-                $cart[$request->event_ticket_type_id]['qunatity']=$request->quantity;
+                $cart[$request->event_ticket_type_id]['quantity']=$request->quantity;
                 session()->put('cart',$cart);
                 return redirect()->back()->with('cart_succees', 'Cart updated successfully');
             }
@@ -118,5 +118,14 @@ class CartController extends Controller
         $request->session()->forget('cart');
     }
 
+    public function test(){
+        $cart = session()->get('cart');
+        dd($cart);
+
+
+
+
+        
+    }
 
 }

@@ -13,5 +13,7 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         //
+    '/checkout/stripe/webhook',
+    '/checkout/stk/process-stk-callback'
     ];
 }

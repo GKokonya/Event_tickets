@@ -12,6 +12,7 @@
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.8",
         "onecentlin/laravel-adminer": "^6.1",
+        "stripe/stripe-php": "^13.7",
         "tightenco/ziggy": "^1.0"
     },
     "require-dev": {

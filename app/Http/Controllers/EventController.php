@@ -26,14 +26,13 @@ class EventController extends Controller
                     'venue'=>$events->venue,
                     'description'=> $events->description,
                     'image' => Storage::url($events->image),
-                    //'url' => route('event.show', $events),
+                    'url' => route('event.show', $events),
                     'start_date'=> $this->getDate($events->start_date),
                     'end_date'=> $this->getDate($events->end_date),
                     'start_time'=> $events->start_time,
                     'end_time'=> $events->end_time,
                 ];
-            }),
-            'logo' => Storage::url('/images/tiko_safi.jpeg'),
+            })
         ]);
     }
 

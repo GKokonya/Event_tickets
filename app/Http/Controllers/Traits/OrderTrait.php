@@ -4,8 +4,8 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 
 use App\Models\Payment;
-use App\Models\order;
-use App\Models\orderItem;
+use App\Models\Order;
+use App\Models\OrderItem;
 
 trait OrderTrait {
     
