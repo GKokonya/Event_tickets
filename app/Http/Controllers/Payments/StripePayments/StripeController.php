@@ -6,17 +6,19 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 use App\Models\Order;
-use App\Models\Payment;
 use App\Models\OrderItem;
 use App\Models\Ticket;
 use App\Models\StripePayment;
 
 use App\Enums\OrderStatus;
-use App\Enums\PaymentStatus;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Traits\OrderTrait;
 use App\Http\Controllers\Traits\EmailTicketTrait;
+
+use ProtoneMedia\LaravelQueryBuilderInertiaJs\InertiaTable;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class StripeController extends Controller
 {
@@ -63,11 +65,8 @@ class StripeController extends Controller
 
             DB::beginTransaction();
 
-            $this->placeOrder($orderItems,$cart['total_price'],$stripe_checkout_session->id);
-
+            $this->placeOrder($orderItems,$cart['total_price'],$stripe_checkout_session->id,'',$payment_type='stripe','');
             DB::commit();
-
-            //remove items from cart
             $request->session()->forget('cart');
 
             return Inertia::location($stripe_checkout_session->url);
@@ -90,15 +89,15 @@ class StripeController extends Controller
                 return Inertia::Render('Checkout/Stripe/Failure',['checkout_failure_message'=>'invalid session id']);
             }
 
-            $payment=Payment::where('checkout_id',$session->id)->whereIn('status',[PaymentStatus::Pending,PaymentStatus::Paid])->first();
+            $order=Order::where('stripe_checkout_id',$session->id)->first();
 
-            if(!$payment  ){
-                return Inertia::Render('Checkout/Stripe/Failure',['checkout_failure_message'=>'payment does not exist']);
+            if(!$order){
+                return Inertia::Render('Checkout/Stripe/Failure',['checkout_failure_message'=>'order does not exist']);
                 //throw new NotFoundHttpException();
             } 
 
-            if($payment->status){
-                $this->completeOrder($payment,$session);
+            if($order->status===OrderStatus::Pending->value){
+                $this->completeOrder($order,$session);
             }
        
             return Inertia::Render('Checkout/Stripe/Success',['customer'=>$session->customer_details]);
@@ -112,7 +111,13 @@ class StripeController extends Controller
     }
 
     public function failure(Request $request){
+        $order=Order::where('stripe_checkout_id','cs_test_a1oPQfEXEuXoJWkgWTXKynXycwcnLIy4RH72lLiv4EQnlSfeGpCBD9EcW8')->first();
+        if($order->status===OrderStatus::Pending->value){
 
+        $this->updateOrderStatus($order,OrderStatus::Paid->value);
+                dd('good');
+        }
+        #dd();
     }
 
     public function webhook(){
@@ -120,7 +125,7 @@ class StripeController extends Controller
         \Stripe\Stripe::setApiKey($stripeSecretKey);
 
         // This is your Stripe CLI webhook secret for testing your endpoint locally.
-        $endpoint_secret = 'whsec_e30567ed813b9374b9f67313ad3df6b445efdf0078b970e152f2edd44023be30';
+        $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
 
         $payload = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
@@ -146,11 +151,10 @@ class StripeController extends Controller
             $paymentIntent = $event->data->object;
             $sessionId=$paymentIntent['id'];
 
-            $payment=Payment::where(['checkout_id'=>$sessionId,'status'=> PaymentStatus::Pending])->first();
+            $order=Order::where('stripe_mpesa_checkout_id',$sessionId)->first();
 
-            if($payment){
+            if($order && $order->status==OrderStatus::Pending){
                 $this->completeOrder($payment,$paymentIntent);
-                $this->generateTicketandSendEmail($payment->order_id);
             }
         // ... handle other event types
         default:
@@ -161,12 +165,13 @@ class StripeController extends Controller
 
     }
 
-    #update payment status and order status
-    private function completeOrder(Payment $payment,$paymentIntent){
+    #update order status
+    private function completeOrder(Order $order,$paymentIntent){
         try{
             $this->insertStripePayment($paymentIntent);
-            $this->updatePaymentStatusAndOrderStatus($payment);
-            $this->generateTickets($payment->order_id);
+            $this->updateOrderStatus($order,OrderStatus::Paid->value);
+            #send email to customer
+            #$this->generateTickets($payment->order_id);
 
         }catch(\Exception $e){
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
@@ -204,7 +209,33 @@ class StripeController extends Controller
 
     }
 
+    public function index(){
+        #$permissions = Permission::search('name',$this->search_keyword)->latest()->paginate(10);
+ 
+         $stripePayments = QueryBuilder::for(StripePayment::class)
+         ->defaultSort('id')
+        ->allowedSorts(['id','session_id','payment_intent','payment_method_types','payment_status','customer_name','customer_email','amount_total'])
+         ->allowedFilters(['id','session_id','payment_intent','payment_method_types','payment_status','customer_name','customer_email','amount_total'])
+         ->paginate(10)
+         ->withQueryString();
+         
 
+
+         return Inertia::render('Stripe/Index', [
+             'stripePayments' => $stripePayments
+         ])->table(function(InertiaTable $table){
+             $table
+             ->defaultSort('id')
+             ->column(key: 'session_id', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'payment_intent', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'payment_method_types', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'payment_status', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'customer_name', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'customer_email', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'amount_total', searchable: true, sortable: true, canBeHidden: false)
+             ;
+         }); 
+     }
 
 }
 

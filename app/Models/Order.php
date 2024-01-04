@@ -9,7 +9,7 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable=['total_price','status','customer_email'];
+    protected $fillable=['total_price','status','customer_email','stripe_checkout_id','mpesa_checkout_id','payment_type'];
 
     public function payment(){
         return $this->hasOne(Payment::class);

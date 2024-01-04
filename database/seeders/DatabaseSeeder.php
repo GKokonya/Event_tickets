@@ -18,11 +18,19 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
 
-        User::factory(1)->create();
-        Event::factory(10)->create()->each(function($event){
+
+        Event::factory(30)->create()->each(function($event){
             EventTicketType::factory(rand(3,5))->create(['event_id'=>$event->id]);
         });
 
-        $this->call([MpesaIpAddressSeeder::class,]);
+        $this->call([
+            UserSeeder::class,
+            RolesAndPermissionsSeeder::class,
+            MpesaIpAddressSeeder::class,
+            //DepositSeeder::class,
+            //FeedbackSeeder::class,
+            //TicketsSeeder::class,
+        ]);
+
     }
 }

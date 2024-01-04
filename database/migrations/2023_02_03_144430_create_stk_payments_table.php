@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('merchantRequestID')->index();
             $table->string('checkoutRequestID')->index();
-            $table->foreign('checkoutRequestID')->references('checkout_id')->on('payments');
+            $table->foreign('checkoutRequestID')->references('mpesa_checkout_id')->on('orders');
             $table->string('responseDescription');
             $table->longtext('responseCode');
             $table->string('customerMessage');

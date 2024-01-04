@@ -15,9 +15,12 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('customer_email')->nullable()->index();
             $table->decimal('total_price',20,2);
             $table->string('status')->index();
-            $table->string('customer_email')->nullable()->index();
+            $table->string('mpesa_checkout_id')->unique()->nullable()->index();
+            $table->string('stripe_checkout_id')->unique()->nullable()->index();
+            $table->string('payment_type')->nullable()->index();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrentOnUpdate();
         });

@@ -11,14 +11,19 @@ use App\Http\Controllers\Traits\OrderTrait;
 
 use App\Models\MpesaIpAddress;
 use App\Models\StkPayment;
-use App\Models\Payment;
+use App\Models\Order;
 
 use App\Enums\StkPaymentStatus;
+use App\Enums\OrderStatus;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 use Illuminate\Support\Facades\Http;
+
+use ProtoneMedia\LaravelQueryBuilderInertiaJs\InertiaTable;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class StkController extends Controller
 {
@@ -110,7 +115,7 @@ class StkController extends Controller
 
                 DB::beginTransaction();
 
-                $this->placeOrder( $orderItems, $cart['total_price'], $lnmo_response->CheckoutRequestID, $validated['email'] );
+                $this->placeOrder( $orderItems, $cart['total_price'], $lnmo_response->CheckoutRequestID,$payment_type='mpesa', $validated['email'] );
                 
                 #store in database
                 StkPayment::create([
@@ -151,7 +156,7 @@ class StkController extends Controller
             "PartyA"=> $phone_number,
             "PartyB"=>  env('MPESA_STK_SHORTCODE'),
             "PhoneNumber"=> $phone_number,
-            "CallBackURL"=>env('MPESA_TEST_URL').'/checkout/stk/process-stk-callback',
+            "CallBackURL"=>env('MPESA_CALLBACK_URL').'/checkout/stk/process-stk-callback',
             "AccountReference"=> "CompanyXLTD",
             "TransactionDesc"=> "Payment of X" 
           );
@@ -215,8 +220,8 @@ class StkController extends Controller
 
                 DB::beginTransaction();
                 #store in database
-                    $payment=Payment::where('checkout_id',$validated['checkoutRequestID'])->first();
-                    $this->updatePaymentStatusAndOrderStatus($payment);
+                    $order=Order::where('checkout_id',$validated['checkoutRequestID'])->first();
+                    $this->updateOrderStatus(OrderStatus::Paid);
                 DB::commit();
 
                 return array('checkoutRequestID'=>$validated['checkoutRequestID'],'resultCode'=>$stkPayment->resultCode);
@@ -275,6 +280,39 @@ class StkController extends Controller
             $stkPayment->update($payment);
         }
         
-    }       
+    }
+
+    public function index(){
+        #$permissions = Permission::search('name',$this->search_keyword)->latest()->paginate(10);
+ 
+         $stkPayments = QueryBuilder::for(StkPayment::class)
+         ->defaultSort('id')
+        ->allowedSorts(['id','merchantRequestID','checkoutRequestID','responseDescription','responseCode','customerMessage','status','resultCode','resultDesc','mpesaReceiptNumber','balance','transactionDate','phoneNumber'])
+         ->allowedFilters(['id','merchantRequestID','checkoutRequestID','mpesaReceiptNumber'])
+         ->paginate(10)
+         ->withQueryString();
+         
+
+
+         return Inertia::render('Mpesa/Index', [
+             'stkPayments' => $stkPayments
+         ])->table(function(InertiaTable $table){
+             $table
+             ->defaultSort('id')
+             ->column(key: 'merchantRequestID', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'checkoutRequestID', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'responseDescription', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'responseCode', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'customerMessage', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'status', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'resultCode', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'resultDesc', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'mpesaReceiptNumber', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'balance', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'transactionDate', searchable: true, sortable: true, canBeHidden: false)
+             ->column(key: 'phoneNumber', searchable: true, sortable: true, canBeHidden: false)
+             ;
+         }); 
+     }
 
 }

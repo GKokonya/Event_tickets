@@ -10,6 +10,10 @@ use App\Http\Controllers\Payments\StripePayments\StripeController;
 use App\Http\Controllers\Payments\Mpesa\StkController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PermissionController;
 
 use Illuminate\Support\Facades\Storage;
 /*
@@ -23,9 +27,12 @@ use Illuminate\Support\Facades\Storage;
 |
 */
 
+Route::get('/database',function(){
+    return Inertia::location('/adminer');
+})->middleware('auth')->name('adminer');
 
 #Event
-Route::get('/', [EventController::class,'index']);
+Route::get('/', [EventController::class,'home']);
 Route::get('event/{event}', [EventController::class,'show'])->name('event.show');
 
 #Cart
@@ -49,7 +56,7 @@ Route::prefix('checkout')->name('checkout')->group(function(){
     Route::prefix('/stripe')->name('.stripe')->group(function(){
         Route::post('/',[StripeController::class,'checkout']);
         Route::get('success',[StripeController::class,'success'])->name('.success');
-        Route::get('/failture',[StripeController::class,'failure'])->name('.failure');
+        Route::get('/failure',[StripeController::class,'failure'])->name('.failure');
         Route::post('/webhook',[StripeController::class,'webhook'])->name('.webhook');
     });
 
@@ -81,6 +88,36 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/events', [EventController::class,'index'])->name('events.index');
+    Route::get('/orders', [OrderController::class,'index'])->name('orders.index');
+    Route::get('/mpesa', [StkController::class,'index'])->name('mpesa.index');
+    Route::get('/stripe', [StripeController::class,'index'])->name('stripe.index');
+
+    #roles
+    Route::group(['prefix'=> 'roles',],function(){
+        Route::get('/',[RoleController::class,'index'])->name('roles.index')->middleware('can:view roles');
+        Route::get('/create',[RoleController::class,'create'])->name('roles.create')->middleware('can:create role');
+        Route::post('/',[RoleController::class,'store'])->name('roles.store')->middleware('can:create role');
+        Route::get('/{role}/edit',[RoleController::class,'edit'])->name('roles.edit')->middleware('can:edit role');
+        Route::patch('/{role}',[RoleController::class,'update'])->name('roles.update')->middleware('can:edit role');
+        Route::delete('/{role}',[RoleController::class,'destroy'])->name('roles.destroy')->middleware('can:delete role');
+    });
+        
+    #permissions
+    Route::group(['prefix'=> 'permissions',],function(){
+        Route::get('/',[PermissionController::class,'index'])->name('permissions.index')->middleware('can:view permissions');
+        Route::get('/create',[PermissionController::class,'create'])->name('permissions.create')->middleware('can:create permission');
+        Route::post('/',[PermissionController::class,'store'])->name('permissions.store')->middleware('can:create permission');
+        Route::get('/{permission}/edit',[PermissionController::class,'edit'])->name('permissions.edit')->middleware('can:edit permission');
+        Route::patch('/{permission}',[PermissionController::class,'update'])->name('permissions.update')->middleware('can:edit permission');
+        Route::delete('/{permission}',[permissionController::class,'destroy'])->name('permissions.destroy')->middleware('can:delete permission');
+    });
+    
 });
 
 Route::get('/dashboard', function () {

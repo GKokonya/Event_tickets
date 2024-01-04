@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('stripe_payments', function (Blueprint $table) {
             $table->id();
             $table->string('session_id')->index();
-            $table->foreign('session_id')->references('checkout_id')->on('payments')->onUpdate('cascade');
+            $table->foreign('session_id')->references('stripe_checkout_id')->on('orders')->onUpdate('cascade');
             $table->string('payment_intent')->index();
             $table->string('payment_method_types');
             $table->string('payment_status');

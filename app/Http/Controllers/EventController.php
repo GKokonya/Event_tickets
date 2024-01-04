@@ -9,6 +9,11 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
+use Illuminate\Support\Collection;
+use ProtoneMedia\LaravelQueryBuilderInertiaJs\InertiaTable;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
+
 class EventController extends Controller
 {
     /**
@@ -16,10 +21,33 @@ class EventController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
     public function index()
     {
+        $events = QueryBuilder::for(Event::class)
+            ->defaultSort('title')
+            ->allowedSorts(['title','venue'])
+            ->allowedFilters(['title','venue'])
+            ->paginate(10)
+            ->withQueryString();
+        
+        return Inertia::render('Events/Index', [
+            'events' => $events
+        ])->table(function(InertiaTable $table){
+            $table
+            ->defaultSort('title')
+            ->column(key: 'title', searchable: true, sortable: true, canBeHidden: false)
+            ->column(key: 'venue', searchable: true, sortable: true, canBeHidden: false)
+            ->column(key: 'country', searchable: false, sortable: true, canBeHidden: false)
+            ;
+        }); 
+    }
+
+
+    public function home()
+    {
         return Inertia::render('Home', [
-            'events' => Event::paginate(7)->through(function($events){
+            'events' => Event::paginate(10)->through(function($events){
                 return [
                     'id' => $events->id,
                     'title' => $events->title,
