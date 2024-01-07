@@ -13,15 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('event_ticket_types', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->foreignId('event_id')->index()->constrained('events')->onUpdate('cascade');
-            $table->string('title');
-            $table->integer('unit_price');
+        Schema::create('order_details', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->index();
+            $table->unsignedBigInteger('order_id')->index();
+            $table->unsignedBigInteger('event_ticket_type_id')->index();
             $table->integer('quantity');
-            $table->string('status')->default('active')->index();
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->decimal('unit_price',20,2);
+            $table->decimal('total_price',20,2);
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrentOnUpdate();
         });
@@ -34,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('event_ticket_types');
+        Schema::dropIfExists('order_details');
     }
 };

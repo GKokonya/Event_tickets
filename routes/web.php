@@ -12,6 +12,7 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderDetailController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
 
 Route::get('/database',function(){
     return Inertia::location('/adminer');
@@ -42,10 +44,6 @@ Route::prefix('cart')->group(function(){
     Route::delete('/{id}', [CartController::class,'destroy'])->name('cart.destroy');
 });
 
-
-Route::get('/cart1',function(){  return Inertia::render('Cart1',[]);})->name('cart1');
-
-Route::get('/test',[CartController::class,'test'])->name('test');
 
 #checkout routes
 Route::prefix('checkout')->name('checkout')->group(function(){
@@ -84,19 +82,29 @@ Route::get('generatePdf/{id}',[TicketController::class,'generatePdf'])->name('ge
 Route::get('send',[TicketController::class,'send'])->name('send');
 Route::get('show/{id}',[TicketController::class,'show'])->name('show');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
 
 Route::middleware('auth')->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/events', [EventController::class,'index'])->name('events.index');
     Route::get('/orders', [OrderController::class,'index'])->name('orders.index');
+    Route::get('/order-details/{order_id}', [OrderDetailController::class,'index'])->name('order-details.index');
     Route::get('/mpesa', [StkController::class,'index'])->name('mpesa.index');
     Route::get('/stripe', [StripeController::class,'index'])->name('stripe.index');
+
+    #events
+    Route::resource('events', EventController::class);
+    // Route::group(['prefix'=> 'events'],function(){
+    //     Route::get('/', [EventController::class, 'index'])->name('events.index');
+    //     Route::get('/create', [EventController::class, 'create'])->name('events.create');
+    //     Route::get('/create', [EventController::class, 'create'])->name('events.st');
+    // });
+    
+
+    #profile
+    Route::group(['prefix'=> 'profile'],function(){
+        Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 
     #roles
     Route::group(['prefix'=> 'roles',],function(){

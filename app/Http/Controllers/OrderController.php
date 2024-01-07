@@ -36,6 +36,7 @@ class OrderController extends Controller
         ->column(key: 'mpesa_checkout_id', searchable: true, sortable: true, canBeHidden: false)
         ->column(key: 'stripe_checkout_id', searchable: true, sortable: true, canBeHidden: false)
         ->column(key: 'payment_type', searchable: true, sortable: true, canBeHidden: false)
+        ->column(label: 'Actions')
         ;
     }); 
     }

@@ -13,11 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('stk_payments', function (Blueprint $table) {
-            $table->bigIncrements('id');
+        Schema::create('fct_stk_payments', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->index();
             $table->string('merchantRequestID')->index();
             $table->string('checkoutRequestID')->index();
-            $table->foreign('checkoutRequestID')->references('mpesa_checkout_id')->on('orders');
             $table->string('responseDescription');
             $table->longtext('responseCode');
             $table->string('customerMessage');
@@ -29,8 +28,8 @@ return new class extends Migration
             $table->string('balance')->nullable();
             $table->datetime('transactionDate')->nullable();
             $table->string('phoneNumber')->nullable();            
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->nullable()->useCurrentOnUpdate();
+            $table->dateTime('created_at');
+            $table->dateTime('updated_at')->nullable();;
         });
     }
 
@@ -41,6 +40,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stk_payments');
+        Schema::dropIfExists('fct_stk_payments');
     }
 };

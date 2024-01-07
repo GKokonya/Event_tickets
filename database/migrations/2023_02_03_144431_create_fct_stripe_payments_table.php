@@ -13,19 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('stripe_payments', function (Blueprint $table) {
-            $table->bigIncrements('id');
+        Schema::create('fct_stripe_payments', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->index();
             $table->string('session_id')->index();
-            $table->foreign('session_id')->references('stripe_checkout_id')->on('orders')->onUpdate('cascade');
             $table->string('payment_intent')->index();
             $table->string('payment_method_types');
             $table->string('payment_status');
             $table->string('customer_name')->index()->nullable();
             $table->string('customer_email')->index()->nullable();
             $table->decimal('amount_total',20,2);
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->nullable()->useCurrentOnUpdate();
-
+            $table->dateTime('created_at');
+            $table->dateTime('updated_at')->nullable();;
         });
     }
 
@@ -36,6 +34,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stripe_payments');
+        Schema::dropIfExists('fct_stripe_payments');
     }
 };

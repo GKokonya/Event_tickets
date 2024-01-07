@@ -117,15 +117,4 @@ class CartController extends Controller
     public function destroyAll(){
         $request->session()->forget('cart');
     }
-
-    public function test(){
-        $cart = session()->get('cart');
-        dd($cart);
-
-
-
-
-        
-    }
-
 }

@@ -9,6 +9,7 @@ defineProps({permissions:Array});
 </script>
 
 <template>
+  <Head title="Permissions" />
 <AdminLayout>
   <Table :resource="permissions" />
 </AdminLayout>

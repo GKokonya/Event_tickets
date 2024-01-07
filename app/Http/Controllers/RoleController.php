@@ -16,10 +16,10 @@ use Spatie\QueryBuilder\QueryBuilder;
 class RoleController extends Controller
 {
     public function index(){
-        $roles = QueryBuilder::for(Role::class)
+        $roles = QueryBuilder::for(Role::with('permissions'))
         ->defaultSort('id')
-        ->allowedSorts(['id','name'])
-        ->allowedFilters(['id','name'])
+        ->allowedSorts(['id','name','permission'])
+        ->allowedFilters(['id','name','permission'])
         ->paginate(10)
         ->withQueryString();
         
@@ -30,6 +30,7 @@ class RoleController extends Controller
             ->defaultSort('id')
             ->column(key: 'id', searchable: true, sortable: true, canBeHidden: false)
             ->column(key: 'name', searchable: true, sortable: true, canBeHidden: false)
+            ->column(key: 'permission', searchable: false, sortable: false, canBeHidden: false)
             ;
         }); 
     }

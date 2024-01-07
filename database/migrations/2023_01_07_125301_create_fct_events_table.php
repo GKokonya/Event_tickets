@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('events', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->foreignId('organizer_id')->constrained('users')->onUpdate('cascade');
+        Schema::create('fct_events', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->index();
+            $table->unsignedBigInteger('organizer_id')->index();
             $table->string('title');
             $table->string('venue');
             $table->longtext('town');
@@ -31,8 +31,8 @@ return new class extends Migration
             $table->longtext('instagram')->nullable();
             $table->longtext('facebook')->nullable();
             $table->string('status')->default('active')->index();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->nullable()->useCurrentOnUpdate();
+            $table->dateTime('created_at');
+            $table->dateTime('updated_at')->nullable();;
         });
     }
 
@@ -43,6 +43,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('events');
+        Schema::dropIfExists('fct_events');
     }
 };

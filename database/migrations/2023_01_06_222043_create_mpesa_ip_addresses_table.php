@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('mpesa_ip_addresses', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->string('ip_address')->unique()->index();
             $table->timestamps();
         });

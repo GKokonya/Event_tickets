@@ -17,20 +17,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-
+        $this->call([
+            UserSeeder::class,
+            RolesAndPermissionsSeeder::class,
+            MpesaIpAddressSeeder::class,
+        ]);
 
         Event::factory(30)->create()->each(function($event){
             EventTicketType::factory(rand(3,5))->create(['event_id'=>$event->id]);
         });
 
-        $this->call([
-            UserSeeder::class,
-            RolesAndPermissionsSeeder::class,
-            MpesaIpAddressSeeder::class,
-            //DepositSeeder::class,
-            //FeedbackSeeder::class,
-            //TicketsSeeder::class,
-        ]);
+
 
     }
 }

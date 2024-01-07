@@ -77,6 +77,7 @@ class EventController extends Controller
     public function create()
     {
         //
+        return Inertia::render('Events/Create');
     }
 
     /**
@@ -88,6 +89,31 @@ class EventController extends Controller
     public function store(Request $request)
     {
         //
+        $data=$request->validate([
+            'amount'=>'required|numeric',
+            'order_id'=>'required|unique:deposits',
+            'public_key'=>'required|max:255|string',
+            'transaction_id'=>'required|unique:deposits',
+        ]);
+    
+
+        DB::transaction(function () use($data) {
+
+            Eveny::create([
+                'amount'=>$data['amount'],
+                'order_id'=>$data['order_id'],
+                'public_key'=>$data['public_key'],
+                'transaction_id'=>$data['transaction_id']
+            ]);
+
+            $order=Order::findorfail($data['order_id']);
+            $order->status='paid';
+            $order->save();
+
+        });
+        
+        $request->session()->flash('success_deposit_message','success! deposit created! for #order '.$data['order_id']);  
+        return redirect()->route('orders.index');
     }
 
     /**

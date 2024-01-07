@@ -19,7 +19,12 @@ use Auth;
 class UserController extends Controller
 {
     public function index(){
-        $users = QueryBuilder::for(User::class)
+
+        //return User::with('roles')->search('users.username',$this->search_keyword)->latest()->paginate(10);
+        
+
+        // $users = QueryBuilder::for(User::class)
+        $users = QueryBuilder::for(User::with('roles'))
         ->defaultSort('id')
         ->allowedSorts(['id','name','email'])
         ->allowedFilters(['id','name','email'])
@@ -34,6 +39,7 @@ class UserController extends Controller
             ->column(key: 'id', searchable: true, sortable: true, canBeHidden: false)
             ->column(key: 'name', searchable: true, sortable: true, canBeHidden: false)
             ->column(key: 'email', searchable: true, sortable: true, canBeHidden: false)
+            ->column(key: 'role', searchable: false, sortable: false, canBeHidden: false)
             ;
         }); 
     }

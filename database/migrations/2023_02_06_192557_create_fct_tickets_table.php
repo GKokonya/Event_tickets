@@ -13,12 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tickets', function (Blueprint $table) {
-            $table->bigIncrements('id')->startingValue(1000);
+        Schema::create('fct_tickets', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->index();
             $table->foreignId('order_detail_id')->index()->constrained('order_details')->onUpdate('cascade');
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->nullable()->useCurrentOnUpdate();
-            $table->timestamp('read_at')->nullable();
+            $table->dateTime('created_at');
+            $table->dateTime('updated_at')->nullable();;
+            $table->dateTime('read_at')->nullable();
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tickets');
+        Schema::dropIfExists('fct_tickets');
     }
 };

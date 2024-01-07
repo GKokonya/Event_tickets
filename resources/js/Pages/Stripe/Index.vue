@@ -9,6 +9,7 @@ defineProps({stripePayments:Array});
 </script>
 
 <template>
+<Head title="Sripe Payments" />
 <AdminLayout>
   <Table :resource="stripePayments" />
 </AdminLayout>

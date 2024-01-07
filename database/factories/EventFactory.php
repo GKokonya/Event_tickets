@@ -18,6 +18,7 @@ class EventFactory extends Factory
     {
         return [
             //
+            'organizer_id' => 2, 
             'title'=>fake()->realText(rand(10, 20)),
             'description'=>fake()->text(),
             'town'=> fake()->city(),

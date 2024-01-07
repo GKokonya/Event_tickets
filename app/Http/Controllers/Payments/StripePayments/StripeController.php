@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 use App\Models\Order;
-use App\Models\OrderItem;
+use App\Models\OrderDetail;
 use App\Models\Ticket;
 use App\Models\StripePayment;
 
@@ -14,7 +14,7 @@ use App\Enums\OrderStatus;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Traits\OrderTrait;
-use App\Http\Controllers\Traits\EmailTicketTrait;
+use App\Http\Controllers\Traits\TicketTrait;
 
 use ProtoneMedia\LaravelQueryBuilderInertiaJs\InertiaTable;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -24,6 +24,7 @@ class StripeController extends Controller
 {
     //
     use OrderTrait;
+    use TicketTrait;
 
     
     public function checkout(Request $request){
@@ -34,7 +35,7 @@ class StripeController extends Controller
 
             $cart=Inertia::getShared('cart');
             $line_items=[];
-            $orderItems=[];
+            $orderDetails=[];
             foreach($cart['items'] as $key=>$value){
                 $line_items[]=[
                     'price_data' => [
@@ -48,7 +49,7 @@ class StripeController extends Controller
                     'quantity'   =>$cart['items'][$key]['quantity'],
                 ];
 
-                $orderItems[]=[
+                $orderDetails[]=[
                     'event_ticket_type_id' => $cart['items'][$key]['event_ticket_type_id'],
                     'unit_price'=>$cart['items'][$key]['unit_price'],
                     'quantity'=>$cart['items'][$key]['quantity'],
@@ -65,7 +66,7 @@ class StripeController extends Controller
 
             DB::beginTransaction();
 
-            $this->placeOrder($orderItems,$cart['total_price'],$stripe_checkout_session->id,'',$payment_type='stripe','');
+            $this->placeOrder($orderDetails,$cart['total_price'],$stripe_checkout_session->id,'',$payment_type='stripe','');
             DB::commit();
             $request->session()->forget('cart');
 
@@ -170,8 +171,7 @@ class StripeController extends Controller
         try{
             $this->insertStripePayment($paymentIntent);
             $this->updateOrderStatus($order,OrderStatus::Paid->value);
-            #send email to customer
-            #$this->generateTickets($payment->order_id);
+            $this->generateTicket($order->id);
 
         }catch(\Exception $e){
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
@@ -180,20 +180,6 @@ class StripeController extends Controller
     }
 
 
-    #create ticket in database
-    private function generateTickets($id){
-        $orderItems=OrderItem::where('order_id',$id)->get();
-
-        if(count($orderItems)>0){
-            foreach($orderItems as $orderItem){
-                for($i=0; $i<$orderItem['quantity']; $i++){
-                    Ticket::create(['order_item_id'=>$orderItem['id'] ]);
-                }
-
-            }
-        }
-        
-    }
 
     private function insertStripePayment($paymentIntent){
 
@@ -213,7 +199,7 @@ class StripeController extends Controller
         #$permissions = Permission::search('name',$this->search_keyword)->latest()->paginate(10);
  
          $stripePayments = QueryBuilder::for(StripePayment::class)
-         ->defaultSort('id')
+         ->defaultSort('id')    
         ->allowedSorts(['id','session_id','payment_intent','payment_method_types','payment_status','customer_name','customer_email','amount_total'])
          ->allowedFilters(['id','session_id','payment_intent','payment_method_types','payment_status','customer_name','customer_email','amount_total'])
          ->paginate(10)
@@ -236,6 +222,10 @@ class StripeController extends Controller
              ;
          }); 
      }
+
+    public function test($id){
+        $this->generateTicket($id);
+    }
 
 }
 
