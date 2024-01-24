@@ -6,10 +6,10 @@ services:
     container_name: php
     ports:
         - "80:80"
-        - "5173:5173"
     volumes:
       - ./:/var/www/html
-      - ./docker/nginx/default.conf:/etc/nginx/sites-available/default 
+      - ./docker/nginx/default.conf:/etc/nginx/sites-available/default
+      - ./docker/php/supervisor/laravel-worker.conf:/etc/supervisor/conf.d/laravel-worker.conf
     networks:
       - laravel
     
@@ -27,7 +27,16 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - laravel 
-
+  node:
+    image: node:alpine3.19
+    working_dir: /var/www/html
+    command: "npm run dev -- --host"
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/var/www/html
+    networks:
+      - laravel 
   # redis:
   #   image: 'redis:7.2.3'
   #   container_name: redis

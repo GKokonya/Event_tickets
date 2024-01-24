@@ -16,11 +16,14 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('customer_email')->nullable()->index();
-            $table->decimal('total_price',20,2);
+            $table->decimal('original_total_price',20,2);
+            $table->decimal('refunded_amount',20,2)->default(0);
+            $table->decimal('final_total_price',20,2);
             $table->string('status')->index();
-            $table->string('mpesa_checkout_id')->nullable()->index();
+            $table->string('mpesa_stk_checkout_id')->nullable()->unique()->index();
+            $table->string('mpesa_reversal_conversation_id')->nullable()->unique()->index();
             $table->string('stripe_checkout_id')->nullable()->index();
-            $table->string('payment_type')->nullable()->index();
+            $table->string('payment_type')->nullable();
             $table->timestamp('created_at');
             $table->timestamp('updated_at')->nullable();
         });

@@ -13,15 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('order_details', function (Blueprint $table) {
-            $table->bigIncrements('id');
+        Schema::create('stg_order_details', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->index();
             $table->unsignedBigInteger('order_id')->index();
             $table->unsignedBigInteger('event_ticket_type_id')->index();
             $table->integer('quantity');
             $table->decimal('unit_price',20,2);
             $table->decimal('total_price',20,2);
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->nullable()->useCurrentOnUpdate();
+            $table->dateTime('created_at');
+            $table->dateTime('updated_at')->nullable();;
         });
     }
 
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('order_details');
+        Schema::dropIfExists('stg_order_details');
     }
 };

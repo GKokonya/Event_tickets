@@ -5,12 +5,12 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head,useForm,router } from '@inertiajs/vue3';
 import { Table } from "@protonemedia/inertiajs-tables-laravel-query-builder";
 
-defineProps({stkPayments:Array});
+defineProps({mpesaReversals:Array});
 </script>
 
 <template>
-  <Head title="Mpesa Payments" />
+  <Head title="Mpesa Reversals" />
 <AdminLayout>
-  <Table :resource="stkPayments" />
+  <Table :resource="mpesaReversals" />
 </AdminLayout>
 </template>

@@ -8,5 +8,6 @@ enum OrderStatus:string {
     case Completed='completed';
     case Failed='failed';
     case Refunded='refunded';
+    case PartiallyRefunded='partially refunded';
 
 }

@@ -16,7 +16,7 @@ return new class extends Migration
         \DB::statement("
         CREATE VIEW IF NOT EXISTS ticket_details  AS 
         SELECT 
-        t1.id AS ticket_id,
+        t1.id AS id,
         t3.id AS order_id,
         t3.customer_email ,
         t2.event_ticket_type_id,

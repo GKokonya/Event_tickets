@@ -9,7 +9,7 @@ trait OrderTrait {
     #enter order in database
     public function placeOrder($orderDetails,$total_price,$stripe_checkout_id='',$mpesa_checkout_id='',$payment_type='',$email=''){
         #create order
-        $order_data=['status'=>OrderStatus::Pending,'total_price'=>$total_price ,'stripe_checkout_id'=>$stripe_checkout_id,'mpesa_checkout_id','payment_type'=>$payment_type ,'customer_email' => $email];
+        $order_data=['status'=>OrderStatus::Pending,'original_total_price'=>$total_price ,'final_total_price'=>$total_price,'stripe_checkout_id'=>$stripe_checkout_id,'mpesa_checkout_id','payment_type'=>$payment_type ,'customer_email' => $email];
         $order=Order::create($order_data);
 
         #create order item

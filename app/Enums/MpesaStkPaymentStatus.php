@@ -2,9 +2,9 @@
 
 namespace App\Enums;
 
-enum StkPaymentStatus:string {
+enum MpesaStkPaymentStatus:string {
     case Requested='requested';
-    case  Paid='paid';
+    case Success='success';
     case Failed='failed';
 
 }

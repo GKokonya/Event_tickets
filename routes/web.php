@@ -29,6 +29,13 @@ use Illuminate\Support\Facades\Storage;
 */
 
 
+
+Route::get('/test/{id}', [StripeController::class,'test']);
+
+Route::get('/test2/{id}', [StripeController::class,'test']);
+
+
+
 Route::get('/database',function(){
     return Inertia::location('/adminer');
 })->middleware('auth')->name('adminer');
@@ -133,5 +140,3 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 require __DIR__.'/auth.php';
-
-

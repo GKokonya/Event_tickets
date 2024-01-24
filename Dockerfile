@@ -26,6 +26,10 @@ RUN apt-get install git -y
 #install supervisor
 RUN apt-get install supervisor -y  
 
+# Copy the Supervisor configuration file into the container
+COPY docker/php/supervisor/laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf
+
+
 #install nginx
 RUN apt-get install nginx=1.22.1-9 -y
 
@@ -49,19 +53,19 @@ RUN apt-get install -y php8.2 php8.2-fpm \
 RUN curl -sL https://deb.nodesource.com/setup_21.5.0
 
 #install node js
-RUN apt-get install nodejs -y
+# RUN apt-get install nodejs -y
 
 #prevent automatic upgrade of node js
-RUN apt-mark hold nodejs
+# RUN apt-mark hold nodejs
 
 #install node package manager
-RUN apt-get install npm -y
+# RUN apt-get install npm -y
 
 
 # COPY package.json ./
 # COPY package-lock.json ./
 
-RUN  npm install -g npm@9.2.0 
+# RUN  npm install -g npm@9.2.0 
 
 # RUN pecl install -o -f redis-7.2.3
 
@@ -80,5 +84,11 @@ RUN chown -R www-data:www-data $WORKDIR
 EXPOSE 80 
 EXPOSE 5173
 
+
 #Immportant
 ENTRYPOINT ["sh","./docker/nginx/start.sh"]
+
+CMD [".sh","./docker/supervisor/start-supervisor"]
+
+#CMD ["/usr/bin/supervisord", "-n", "-c",  "/etc/supervisor/supervisord.conf"]
+

@@ -10,10 +10,10 @@ use App\Http\Controllers\Traits\MpesaTrait;
 use App\Http\Controllers\Traits\OrderTrait;
 
 use App\Models\MpesaIpAddress;
-use App\Models\StkPayment;
+use App\Models\MpesaStkPayment;
 use App\Models\Order;
 
-use App\Enums\StkPaymentStatus;
+use App\Enums\MpesaStkPaymentStatus;
 use App\Enums\OrderStatus;
 
 use Illuminate\Support\Facades\DB;
@@ -25,7 +25,7 @@ use ProtoneMedia\LaravelQueryBuilderInertiaJs\InertiaTable;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
-class StkController extends Controller
+class MpesaStkController extends Controller
 {
     use MpesaTrait, OrderTrait;
 
@@ -118,14 +118,14 @@ class StkController extends Controller
                 $this->placeOrder( $orderItems, $cart['total_price'], $lnmo_response->CheckoutRequestID,$payment_type='mpesa', $validated['email'] );
                 
                 #store in database
-                StkPayment::create([
+                MpesaStkPayment::create([
                     'responseDescription'=>$responseDescription,
                     'responseCode'=>$responseCode,
                     'customerMessage'=>$customerMessage,
                     "merchantRequestID"=>$merchantRequestID, 
                     "checkoutRequestID"=>$checkoutRequestID,
                     "amount"=>$cart['total_price'], 
-                    "status"=>StkPaymentStatus::Requested,
+                    "status"=>MpesaStkPaymentStatus::Requested,
                     "phoneNumber"=>$validated['country_code'].$validated['phone_number']
                 ]);
            
@@ -148,15 +148,15 @@ class StkController extends Controller
     private function initiateStk($phone_number,$amount)
     {        
         $curl_post_data = array(
-            "BusinessShortCode"=> env('MPESA_STK_SHORTCODE'),
-            "Password"=> base64_encode(env('MPESA_STK_SHORTCODE').env('MPESA_PASSKEY').date('YmdHis')),
+            "BusinessShortCode"=> env('MPESA_BUSINESS_SHORT_CODE'),
+            "Password"=> base64_encode(env('MPESA_BUSINESS_SHORT_CODE').env('MPESA_PASSKEY').date('YmdHis')),
             "Timestamp"=> date('YmdHis'),
             "TransactionType"=> "CustomerPayBillOnline",
             "Amount"=> $amount,
             "PartyA"=> $phone_number,
-            "PartyB"=>  env('MPESA_STK_SHORTCODE'),
+            "PartyB"=>  env('MPESA_BUSINESS_SHORT_CODE'),
             "PhoneNumber"=> $phone_number,
-            "CallBackURL"=>env('MPESA_CALLBACK_URL').'/checkout/stk/process-stk-callback',
+            "CallBackURL"=>env('MPESA_URL').'/checkout/stk/process-mpesa-stk-callback',
             "AccountReference"=> "CompanyXLTD",
             "TransactionDesc"=> "Payment of X" 
           );
@@ -194,13 +194,13 @@ class StkController extends Controller
         if(!empty($mpesaIpAddress) && $resultCode==0){
             #Process Mpesa Transaction 
             Storage::disk('local')->put('stk.txt',   $mpesaResponse);
-            $this->insertSuccessfulStkPayment($jsonMpesaResponse);
+            $this->insertSuccessfulMpesaStkPayment($jsonMpesaResponse);
         } 
 
         if(!empty($mpesaIpAddress) && $resultCode!=0){
             #insert failed stk request 
             Storage::disk('local')->put('stk.txt',$mpesaResponse);
-            $this->insertFailedStkPayment($jsonMpesaResponse);
+            $this->insertFailedMpesaStkPayment($jsonMpesaResponse);
         } 
         
         if(empty($mpesaIpAddress)){
@@ -214,9 +214,9 @@ class StkController extends Controller
         try{
             $validated=$request->validate(['checkoutRequestID'=>'required']);
             
-            $stkPayment=StkPayment::where('checkoutRequestID',$validated['checkoutRequestID'])->first();
+            $mpesaStkPayment=MpesaStkPayment::where('checkoutRequestID',$validated['checkoutRequestID'])->first();
 
-            if($stkPayment){
+            if($mpesaStkPayment){
 
                 DB::beginTransaction();
                 #store in database
@@ -224,7 +224,7 @@ class StkController extends Controller
                     $this->updateOrderStatus(OrderStatus::Paid);
                 DB::commit();
 
-                return array('checkoutRequestID'=>$validated['checkoutRequestID'],'resultCode'=>$stkPayment->resultCode);
+                return array('checkoutRequestID'=>$validated['checkoutRequestID'],'resultCode'=>$mpesaStkPayment->resultCode);
             }
 
         }catch(\Exception $e){
@@ -250,34 +250,34 @@ class StkController extends Controller
     }
 
     #store successful stk transaction into database
-    private function insertSuccessfulStkPayment($jsonMpesaResponse){
-        $resultCode=$jsonMpesaResponse->Body->stkCallback->ResultCode;
-        $resultDesc=$jsonMpesaResponse->Body->stkCallback->ResultDesc;
-        $checkoutRequestID=$jsonMpesaResponse->Body->stkCallback->CheckoutRequestID;
-        $amount=$jsonMpesaResponse->Body->stkCallbackCallbackMetadata->Item[0]->Value;
-        $mpesaReceiptNumber=$jsonMpesaResponse->Body->stkCallbackCallbackMetadata->Item[1]->Value;
-        $balance=$jsonMpesaResponse->Body->stkCallbackCallbackMetadata->Item[2]->Value;
-        $transactionDate=$jsonMpesaResponse->Body->stkCallbackCallbackMetadata->Item[3]->Value;
+    private function insertSuccessfulMpesaStkPayment($jsonMpesaResponse){
+        $ResultCode=$jsonMpesaResponse->Body->stkCallback->ResultCode;
+        $ResultDesc=$jsonMpesaResponse->Body->stkCallback->ResultDesc;
+        $CheckoutRequestID=$jsonMpesaResponse->Body->stkCallback->CheckoutRequestID;
+        $Amount=$jsonMpesaResponse->Body->stkCallback->CallbackMetadata->Item[0]->Value;
+        $mpesaReceiptNumber=$jsonMpesaResponse->Body->stkCallback->CallbackMetadata->Item[1]->Value;
+        $balance=$jsonMpesaResponse->Body->stkCallback->CallbackMetadata->Item[2]->Value;
+        $transactionDate=$jsonMpesaResponse->Body->stkCallback->CallbackMetadata->Item[3]->Value;
 
         #store in database
-        $stkPayment=StkPayment::where('checkoutRequestID',$checkoutRequestID)->first();
+        $mpesaStkPayment=MpesaStkPayment::where('checkoutRequestID',$checkoutRequestID)->first();
 
         #check if transaction exist in database
-        if($StkPayment){
-            $payment=["resultDesc"=>$resultDesc,"resultCode"=>$resultCode,'status'=>StkPaymentStatus::Paid,"mpesaReceiptNumber"=>$mpesaReceiptNumber, "balance"=>$balance, "transactionDate"=>$transactionDate];
-            $stkPayment->update($payment);
+        if($mpesaStkPayment){
+            $payment=["ResultDesc"=>$ResultDesc,"ResultCode"=>$resultCode,'Status'=>MpesaStkPaymentStatus::Success,"MpesaReceiptNumber"=>$MpesaReceiptNumber, "Balance"=>$Balance, "TransactionDate"=>$TransactionDate];
+            $mpesaStkPayment->update($payment);
         }
         
     }
 
-    private function insertFailedStkPayment($jsonMpesaResponse){
+    private function insertFailedMpesaStkPayment($jsonMpesaResponse){
         $checkoutRequestID=$jsonMpesaResponse->Body->stkCallback->checkoutRequestID;
         #store in database
-        $stkPayment=StkPayment::where('CheckoutRequestID',$checkoutRequestID)->first();
+        $mpesaStkPayment=MpesaStkPayment::where('CheckoutRequestID',$checkoutRequestID)->first();
 
-        if($StkPayment){
-            $payment=["resultDesc"=>$resultDesc,"resultCode"=>$resultCode,'status'=>StkPaymentStatus::Failed];
-            $stkPayment->update($payment);
+        if($mpesaStkPayment){
+            $payment=["resultDesc"=>$resultDesc,"resultCode"=>$resultCode,'status'=>MpesaStkPaymentStatus::Failed];
+            $mpesaStkPayment->update($payment);
         }
         
     }
@@ -285,7 +285,7 @@ class StkController extends Controller
     public function index(){
         #$permissions = Permission::search('name',$this->search_keyword)->latest()->paginate(10);
  
-         $stkPayments = QueryBuilder::for(StkPayment::class)
+         $mpesaStkPayments = QueryBuilder::for(MpesaStkPayment::class)
          ->defaultSort('id')
         ->allowedSorts(['id','merchantRequestID','checkoutRequestID','responseDescription','responseCode','customerMessage','status','resultCode','resultDesc','mpesaReceiptNumber','balance','transactionDate','phoneNumber'])
          ->allowedFilters(['id','merchantRequestID','checkoutRequestID','mpesaReceiptNumber'])
@@ -294,8 +294,8 @@ class StkController extends Controller
          
 
 
-         return Inertia::render('Mpesa/Index', [
-             'stkPayments' => $stkPayments
+         return Inertia::render('Mpesa/StkPayments/Index', [
+             'mpesaStkPayments' => $mpesaStkPayments
          ])->table(function(InertiaTable $table){
              $table
              ->defaultSort('id')

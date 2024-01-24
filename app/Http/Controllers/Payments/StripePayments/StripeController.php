@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Ticket;
 use App\Models\StripePayment;
+use App\Models\TicketDetail;
 
 use App\Enums\OrderStatus;
 use Illuminate\Support\Facades\DB;
@@ -99,6 +100,7 @@ class StripeController extends Controller
 
             if($order->status===OrderStatus::Pending->value){
                 $this->completeOrder($order,$session);
+                $this->sendEmailAndAttachTicket($order->id);
             }
        
             return Inertia::Render('Checkout/Stripe/Success',['customer'=>$session->customer_details]);
@@ -156,6 +158,7 @@ class StripeController extends Controller
 
             if($order && $order->status==OrderStatus::Pending){
                 $this->completeOrder($payment,$paymentIntent);
+                $this->sendEmailAndAttachTicket($order->id);
             }
         // ... handle other event types
         default:
@@ -224,8 +227,15 @@ class StripeController extends Controller
      }
 
     public function test($id){
-        $this->generateTicket($id);
+        //$this->generateTicket($id);
+        $this->sendEmailAndAttachTicket($id);
     }
 
+    public function test2($id){
+        $ticket_details = TicketDetail::where('order_id',$order_id)->get();
+        return view('ticket',['ticket_details'=>$ticket_details]);
+    }
+
+    
 }
 
