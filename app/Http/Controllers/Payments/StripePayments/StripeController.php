@@ -225,17 +225,6 @@ class StripeController extends Controller
              ;
          }); 
      }
-
-    public function test($id){
-        //$this->generateTicket($id);
-        $this->sendEmailAndAttachTicket($id);
-    }
-
-    public function test2($id){
-        $ticket_details = TicketDetail::where('order_id',$order_id)->get();
-        return view('ticket',['ticket_details'=>$ticket_details]);
-    }
-
     
 }
 

@@ -10,6 +10,7 @@ services:
       - ./:/var/www/html
       - ./docker/nginx/default.conf:/etc/nginx/sites-available/default
       - ./docker/php/supervisor/laravel-worker.conf:/etc/supervisor/conf.d/laravel-worker.conf
+      - ./docker/php/uploads.ini:/etc/php/8.2/fpm/conf.d/uploads.ini
     networks:
       - laravel
     

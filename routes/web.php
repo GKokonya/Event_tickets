@@ -7,7 +7,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Payments\StripePayments\StripeController;
-use App\Http\Controllers\Payments\Mpesa\StkController;
+use App\Http\Controllers\Payments\Mpesa\MpesaStkController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\UserController;
@@ -15,7 +15,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDetailController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
-
+use App\Http\Controllers\RefundController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Storage;
 /*
 |--------------------------------------------------------------------------
@@ -27,12 +28,6 @@ use Illuminate\Support\Facades\Storage;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-
-
-Route::get('/test/{id}', [StripeController::class,'test']);
-
-Route::get('/test2/{id}', [StripeController::class,'test']);
 
 
 
@@ -51,6 +46,11 @@ Route::prefix('cart')->group(function(){
     Route::delete('/{id}', [CartController::class,'destroy'])->name('cart.destroy');
 });
 
+#payment
+Route::get('/payment',function(){  
+    return Inertia::render('Payment');
+})->name('payment');
+
 
 #checkout routes
 Route::prefix('checkout')->name('checkout')->group(function(){
@@ -68,34 +68,49 @@ Route::prefix('checkout')->name('checkout')->group(function(){
     #M-Pesa
     Route::prefix('/mpesa')->name('.mpesa')->group(function(){
         Route::view('/','mpesa');
-        Route::get('/stk/stk',[StkController::class, 'stk'])->name('.stk.stk');
-        Route::post('/stk/checkout', [StkController::class, 'checkout'])->name('.stk.checkout');
-        Route::post('/stk/process-stk-callback', [StkController::class, 'processStkCallback'])->name('.stk.process-stk-callback');
-        Route::get('/stk/processing/{checkoutRequestID}', [StkController::class, 'processing'])->name('.stk.processing');
-        Route::post('/stk/confirm-payment', [StkController::class, 'confirmPayment'])->name('.stk.confirm-payment');
-        Route::get('/stk/success', [StkController::class, 'success'])->name('.stk.success');
-        Route::get('/stk/failure', [StkController::class, 'failture'])->name('.stk.failure');
+        Route::get('/stk/stk',[MpesaStkController::class, 'stk'])->name('.stk.stk');
+        Route::post('/stk/checkout', [MpesaStkController::class, 'checkout'])->name('.stk.checkout');
+        Route::post('/stk/process-stk-callback', [MpesaStkController::class, 'processStkCallback'])->name('.stk.process-stk-callback');
+        Route::get('/stk/processing/{checkoutRequestID}', [MpesaStkController::class, 'processing'])->name('.stk.processing');
+        Route::post('/stk/confirm-payment', [MpesaStkController::class, 'confirmPayment'])->name('.stk.confirm-payment');
+        Route::get('/stk/success', [MpesaStkController::class, 'success'])->name('.stk.success');
+        Route::get('/stk/failure', [MpesaStkController::class, 'failture'])->name('.stk.failure');
     });
 
 });
 
 
-Route::get('fakeStk', [StkController::class, 'fakeStk'])->name('fakeStk');
-Route::get('store', [StkController::class, 'store'])->name('store');
-
-
-/**SoldTicket */
-Route::get('generatePdf/{id}',[TicketController::class,'generatePdf'])->name('generatePdf');
-Route::get('send',[TicketController::class,'send'])->name('send');
-Route::get('show/{id}',[TicketController::class,'show'])->name('show');
+Route::get('fakeStk', [MpesaStkController::class, 'fakeStk'])->name('fakeStk');
+Route::get('store', [MpesaStkController::class, 'store'])->name('store');
 
 
 Route::middleware('auth')->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/orders', [OrderController::class,'index'])->name('orders.index');
     Route::get('/order-details/{order_id}', [OrderDetailController::class,'index'])->name('order-details.index');
-    Route::get('/mpesa', [StkController::class,'index'])->name('mpesa.index');
+    Route::get('/mpesa', [MpesaStkController::class,'index'])->name('mpesa.index');
     Route::get('/stripe', [StripeController::class,'index'])->name('stripe.index');
+
+
+    #orders
+    Route::group(['prefix'=> 'orders'],function(){
+        Route::get('/', [OrderController::class,'index'])->name('orders.index');
+        Route::get('/refund/{order_id}', [OrderController::class, 'refund'])->name('orders.refund');
+    });
+
+
+    #refunds
+    Route::group(['prefix'=> 'refunds'],function(){
+        Route::get('/', [RefundController::class, 'index'])->name('refunds.index');
+        Route::get('/{order_id}/{refund_initiator_id}', [RefundController::class, 'show'])->name('refunds.show');
+        Route::get('/approval/{order_id}/{refund_initiator_id}', [RefundController::class, 'approval'])->name('refunds.approval');
+        Route::get('/orders', [RefundController::class, 'orders'])->name('refunds.orders');
+        Route::post('/intiate', [RefundController::class, 'intiate'])->name('refunds.intiate');
+        Route::delete('/{id}', [RefundController::class, 'destroy'])->name('refunds.destroy');
+        Route::delete('/orders/{id}', [RefundController::class, 'destroyRefundOrder'])->name('refunds.destroyRefundOrder');
+
+    });
+
+
 
     #events
     Route::resource('events', EventController::class);

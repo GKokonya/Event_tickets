@@ -16,12 +16,11 @@ return new class extends Migration
         Schema::create('stg_tickets', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->index();
             $table->unsignedBigInteger('order_detail_id')->nullable();
-            $table->unsignedBigInteger('refund_initiator_id')->nullable();;
-            $table->unsignedBigInteger('refund_approver_id')->nullable();;
-            $table->dateTime('created_at');
-            $table->dateTime('updated_at')->nullable();;
-            $table->dateTime('read_at')->nullable();
-            $table->timestamp('refunded_at')->nullable();
+            $table->unsignedBigInteger('scanned_by')->nullable();
+            $table->timestamp('scanned_at')->nullable();
+            $table->timestamp('created_at');
+            $table->timestamp('updated_at');
+
         });
     }
 

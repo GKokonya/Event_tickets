@@ -33,7 +33,7 @@ return new class extends Migration
         t5.end_date AS event_end_date,
         t5.end_time AS event_end_time
         FROM
-        (SELECT id,order_detail_id FROM tickets) t1
+        (SELECT a.id,a.order_detail_id FROM tickets a LEFT JOIN refunds b ON a.id=b.ticket_id WHERE  b.ticket_id IS NULL) t1
         INNER JOIN
         (SELECT id,order_id,event_ticket_type_id ,unit_price FROM order_details) t2
         ON t1.order_detail_id=t2.id

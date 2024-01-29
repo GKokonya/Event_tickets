@@ -59,13 +59,14 @@ RUN curl -sL https://deb.nodesource.com/setup_21.5.0
 # RUN apt-mark hold nodejs
 
 #install node package manager
-# RUN apt-get install npm -y
+RUN apt-get install npm -y
 
+RUN  npm install -g npm@9.2.0 
 
 # COPY package.json ./
 # COPY package-lock.json ./
 
-# RUN  npm install -g npm@9.2.0 
+
 
 # RUN pecl install -o -f redis-7.2.3
 
@@ -88,7 +89,5 @@ EXPOSE 5173
 #Immportant
 ENTRYPOINT ["sh","./docker/nginx/start.sh"]
 
-CMD [".sh","./docker/supervisor/start-supervisor"]
 
-#CMD ["/usr/bin/supervisord", "-n", "-c",  "/etc/supervisor/supervisord.conf"]
 

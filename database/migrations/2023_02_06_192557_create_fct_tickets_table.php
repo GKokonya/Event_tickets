@@ -15,10 +15,11 @@ return new class extends Migration
     {
         Schema::create('fct_tickets', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->index();
-            $table->foreignId('order_detail_id')->index()->constrained('order_details')->onUpdate('cascade');
-            $table->dateTime('created_at');
-            $table->dateTime('updated_at')->nullable();;
-            $table->dateTime('read_at')->nullable();
+            $table->unsignedBigInteger('order_detail_id')->nullable();
+            $table->unsignedBigInteger('scanned_by')->nullable();
+            $table->timestamp('scanned_at')->nullable();
+            $table->timestamp('created_at');
+            $table->timestamp('updated_at');
         });
     }
 

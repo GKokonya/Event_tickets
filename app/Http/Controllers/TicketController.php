@@ -4,16 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\TicketMail;
-use App\Models\Viewticket;
-use PDF;
+use Inertia\Inertia;
+use App\Models\TicketDetail;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
+use Auth;
 class TicketController extends Controller
 {
     //
 
-    
+
+
+
+
+//  }
  
 
 }

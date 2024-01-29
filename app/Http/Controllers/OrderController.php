@@ -8,37 +8,32 @@ use Inertia\Inertia;
 use ProtoneMedia\LaravelQueryBuilderInertiaJs\InertiaTable;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
-
+use App\Models\TicketDetail;
 class OrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        //
-    $orders = QueryBuilder::for(Order::class)
-    ->defaultSort('id')
-    ->allowedSorts(['id','customer_email','total_price','status','mpesa_checkout_id','stripe_checkout_id','payment_type'])
-    ->allowedFilters(['id','customer_email','total_price','status','mpesa_checkout_id','stripe_checkout_id','payment_type'])
-    ->paginate(10)
-    ->withQueryString();
-    
-    return Inertia::render('Orders/Index', [
-        'orders' => $orders
-    ])->table(function(InertiaTable $table){
-        $table
-        ->defaultSort('id')
-        ->column(key: 'id', searchable: true, sortable: true, canBeHidden: false)
-        ->column(key: 'customer_email', searchable: true, sortable: true, canBeHidden: false)
-        ->column(key: 'total_price', searchable: true, sortable: true, canBeHidden: false)
-        ->column(key: 'status', searchable: true, sortable: true, canBeHidden: false)
-        ->column(key: 'mpesa_checkout_id', searchable: true, sortable: true, canBeHidden: false)
-        ->column(key: 'stripe_checkout_id', searchable: true, sortable: true, canBeHidden: false)
-        ->column(key: 'payment_type', searchable: true, sortable: true, canBeHidden: false)
-        ->column(label: 'Actions')
-        ;
-    }); 
+    public function index(){
+        $orders = Order::select('id','customer_email','original_total_price', 'refunded_amount','final_total_price','status','mpesa_stk_checkout_id','stripe_checkout_id','payment_type')
+        ->get();
+        
+        return Inertia::render('Orders/Index', [
+            'orders' => $orders //Order::paginate(10)
+        ]);
+    }
+
+
+
+
+    public function refund($order_id){
+     
+        $ticket_details = TicketDetail::select('id', 'order_id','event_title','event_ticket_type','event_ticket_type_id')->where('order_id',$order_id)->get();
+        session()->put('selected_order_id', $order_id);
+         return Inertia::render('Orders/Refund', [
+              'ticket_details' => $ticket_details
+         ]);
+     
     }
 
     /**

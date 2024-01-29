@@ -1,25 +1,44 @@
 <script setup>
 
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-;
+import { ref  } from 'vue';
 import { Head,useForm,router,Link } from '@inertiajs/vue3';
 import Datatable from '@/Components/Datatable.vue';
-import Pagination from '@/Components/Pagination.vue';
 
-defineProps({orders:Array});
-let columns=['id','customer_email','original_total_price', 'refunded_amount','final_total_price','status','mpesa_stk_checkout_id','stripe_checkout_id','payment_type','actions']
+
+defineProps({ticket_details:Array});
+let columns=['id', 'order_id','event_title','event_ticket_type','event_ticket_type_id'];
 
 let actions={
   
-  'details':'/order-details/',
-  'refund':'/orders/refund/'
+  'view order':'/order-details/',
+  'refund':'/refund/'
   }
+
+let route ='/intiate';
+
+let button = 'refund';
+
+let ids =ref([]);
+
+function submit() {
+  router.post('/refunds/intiate', {'ids':ids.value})
+
+}
+
+
+
 </script>
 
+
+
 <template>
-  <Head title="Orders" />
+  <Head title="Refunds" />
   <AdminLayout>
-      <Datatable :columns="columns">
+    
+    <form @submit.prevent="submit">
+      <button>submit </button>
+      <Datatable >
         <thead class="bg-gray-50">
           <tr class="font-medium text-xs uppercase text-left tracking-wider text-gray-500 py-3 px-6">
             <th class="" >
@@ -43,29 +62,19 @@ let actions={
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200" v-if="orders">                
-          <tr class="hover:bg-gray-50"  v-for="(key,index) in orders" :key="index">
+        <tbody class="bg-white divide-y divide-gray-200">              
+          <tr class="hover:bg-gray-50"  v-for="(key,index) in ticket_details" :key="index">
             <td class="text-sm py-4 px-6 text-gray-500 whitespace-nowrapflex justify-end">
-              <input type="checkbox" :id="key.id" ref="id" :value="key.id" class="rounded-md border-gray-300 shadow-sm"/>
+                <input type="checkbox" :id="key.id" v-model="ids"  :value="key.id" @click="test" class="rounded-md border-gray-300 shadow-sm"/>
             </td>
             <td class="text-sm py-4 px-6 text-gray-500 whitespace-nowrapflex justify-end" v-for="(value,index) in key" :key="index">{{value}}</td>
-            <td class="text-sm py-4 px-6 text-gray-500 whitespace-nowrapflex justify-end" v-for="(action,index) in actions" :key="index">
-                <Link class="bg-gray-900 text-sm text-white rounded-lg p-2" :href="action+key.id">
-                    {{ index }}
-                </Link>
-            </td>
-          </tr>
-        </tbody>
-        <tbody class="bg-white divide-y divide-gray-200" v-if="!orders">                
-          <tr class="hover:bg-gray-50">
-            <td class="text-sm py-4 px-6 text-gray-500 whitespace-nowrapflex justify-end">
-              No records ...
-            </td>
-          </tr>
-        </tbody>   
-      </Datatable>
 
-        <!--pagination-->
-        <Pagination :links="orders.links" class="mt-2 flex justify-center"/>
+          </tr>  
+        </tbody>  
+      </Datatable>
+    </form>
+
+      <!--pagination-->
+      <Pagination :links="ticket_details.links" class="mt-2 flex justify-center"/>
     </AdminLayout>
 </template>
