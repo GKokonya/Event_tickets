@@ -1,6 +1,6 @@
 <script setup>
 import { Link,useForm } from '@inertiajs/vue3';
-import LayoutVue from '../Components/Layout.vue';
+import LayoutVue from '@/Components/Layout.vue';
 
 let props=defineProps({events:Array, cart:Array});
 const title="M-Pesa";

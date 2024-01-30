@@ -1,5 +1,5 @@
 <script setup>
- import  SidebarLink  from '../Components/SideBarLink.vue';
+ import  SidebarLink  from '@/Components/SideBarLink.vue';
  import { Link } from '@inertiajs/vue3';
 </script>
 

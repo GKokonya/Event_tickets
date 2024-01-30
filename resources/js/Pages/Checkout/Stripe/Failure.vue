@@ -1,6 +1,6 @@
 <script setup>
 
-import Layout from '../../../Components/Layout.vue';
+import Layout from '@/Components/Layout.vue';
 
 defineProps({checkout_failure_message:String});
 const title="Cancel";

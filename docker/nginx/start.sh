@@ -1,6 +1,7 @@
 #!/bin/sh
-# echo "npm run"
-# npm run dev -- --host &
+echo "npm install"
+npm install &
+
 echo "Starting Supervisor"
 echo "####################"
 

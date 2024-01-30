@@ -1,7 +1,7 @@
 <script setup>
 import { useForm,Link } from '@inertiajs/vue3';
-import Layout from '../Components/Layout.vue';
-import Alert from '../Components/Alert.vue';
+import Layout from '@/Components/Layout.vue';
+import Alert from '@/Components/Alert.vue';
 import { isIntegerKey } from '@vue/shared';
 
 const props=defineProps({event : Array, img: String, tickets: Array, cart:Array, min_quantity:Number, max_quantity: Number});

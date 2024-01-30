@@ -1,7 +1,7 @@
 <script setup>
 import {router, useForm,Link,Head } from '@inertiajs/vue3';
-import Layout from '../Components/Layout.vue';
-import { reactive } from 'vue'
+import Layout from '@/Components/Layout.vue';
+import { reactive } from 'vue';
 
 defineProps({
     events:Array,

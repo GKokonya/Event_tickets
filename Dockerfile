@@ -36,7 +36,14 @@ RUN apt-get install nginx=1.22.1-9 -y
 #prevent automatic upgrade of nginx
 RUN apt-mark hold nginx
 
+#install firewall
 RUN apt install ufw -y
+
+#allow http in firewall
+RUN ufw allow http
+
+#allow https in firewall
+RUN ufw allow https
 
 #install php extensions
 RUN apt-get install -y php8.2 php8.2-fpm \
@@ -53,20 +60,19 @@ RUN apt-get install -y php8.2 php8.2-fpm \
 RUN curl -sL https://deb.nodesource.com/setup_21.5.0
 
 #install node js
-# RUN apt-get install nodejs -y
+RUN apt-get install nodejs -y
 
 #prevent automatic upgrade of node js
-# RUN apt-mark hold nodejs
+RUN apt-mark hold nodejs
 
 #install node package manager
 RUN apt-get install npm -y
 
+#
 RUN  npm install -g npm@9.2.0 
 
 # COPY package.json ./
 # COPY package-lock.json ./
-
-
 
 # RUN pecl install -o -f redis-7.2.3
 

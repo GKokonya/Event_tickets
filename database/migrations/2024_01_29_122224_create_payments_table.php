@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     */->index()
+     */
     public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {

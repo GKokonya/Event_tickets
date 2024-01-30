@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 trait OrderTrait {
     
     #enter order in database
-    public function order($orderDetails,$total_price,$phone='',$email='',$payment_type){
+    public function order( $orderDetails, $total_price, $payment_type, $phone='', $email='', ){
         #create order
         $order_data=['status'=>OrderStatus::Pending,'original_total_price'=>$total_price ,'phone'=>$phone,'final_total_price'=>$total_price,'payment_type'=>$payment_type ,'customer_email' => $email];
         $order=Order::create($order_data);
@@ -34,7 +34,7 @@ trait OrderTrait {
             OrderDetail::create($orderDetail);
         }
 
-        return ['order_id' => $order->id, 'amount' => $total_price,'email' => $email, 'phone' => $phone]
+        return ['order_id' => $order->id, 'amount' => $total_price,'email' => $email, 'phone' => $phone];
     }
 
 

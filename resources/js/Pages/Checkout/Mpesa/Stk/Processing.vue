@@ -1,8 +1,8 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3';
-import Loader from '../../../../Components/Loader.vue';
+import Loader from '@/Components/Loader.vue';
 
-import Layout from '../../../../Components/Layout.vue';
+import Layout from '@/Components/Layout.vue';
 let props=defineProps({ checkoutRequestID:String});
 
 

@@ -1,6 +1,6 @@
 <script setup>
 
-import Layout from '../Components/Layout.vue';
+import Layout from '@/Components/Layout.vue';
 import { Link,useForm } from '@inertiajs/vue3';
 
 
